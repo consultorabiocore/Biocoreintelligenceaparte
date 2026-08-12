@@ -1,0 +1,44 @@
+name: 📨 BioCore - Reportes Automáticos Telegram
+
+on:
+  # Ejecuta cada hora a las :00 en UTC (que es cada hora en punto)
+  schedule:
+    - cron: '0 * * * *'  # Cada hora a UTC (incluye 18:00 UTC = 15:00 Chile)
+  
+  # Permitir ejecutar manualmente desde GitHub Actions
+  workflow_dispatch:
+    inputs:
+      enviar_todos:
+        description: '¿Enviar a TODOS los clientes? (true/false)'
+        required: true
+        default: 'false'
+
+jobs:
+  enviar_reportes:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install supabase requests pytz
+
+      - name: 🚀 Ejecutar scheduler de reportes
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        run: |
+          python enviar_reportes.py
+
+      - name: 📊 Resumen de ejecución
+        if: always()
+        run: echo "✅ Ciclo de reportes completado"
