@@ -18,7 +18,7 @@ import requests
 from datetime import datetime, time, timedelta
 import plotly.graph_objects as go
 from supabase import create_client, Client
-import matps plt
+import matplotlib.pyplot as plt
 import matplotlib
 import matplotlib.ticker as ticker
 from fpdf import FPDF
