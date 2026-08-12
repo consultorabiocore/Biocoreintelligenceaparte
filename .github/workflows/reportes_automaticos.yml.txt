@@ -1,0 +1,45 @@
+name: BioCore - Reportes Automáticos Telegram
+
+on:
+  schedule:
+    # Corre al minuto 0 de cada hora
+    - cron: '0 * * * *'
+
+  workflow_dispatch:
+    inputs:
+      enviar_todos:
+        description: '¿Enviar a TODOS los clientes? (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  enviar-reportes:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+      
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Instalar dependencias
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Ejecutar script de reportes
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          ENVIAR_TODOS: ${{ github.event.inputs.enviar_todos || 'false' }}
+        run: |
+          python scheduler/enviar_reportes.py
+      
+      - name: Registrar ejecución
+        if: always()
+        run: |
+          echo "✅ Workflow ejecutado en $(date -u +'%Y-%m-%d %H:%M:%S') UTC"
